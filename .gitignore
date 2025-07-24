@@ -1,0 +1,29 @@
+# West workspace directories (managed by west)
+zephyr/
+modules/
+tools/
+bootloader/
+
+# West configuration
+.west/
+
+# Build artifacts
+build/
+**/build/
+
+# Common build files
+*.o
+*.a
+*.elf
+*.hex
+*.bin
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
