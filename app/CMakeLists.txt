@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 # Convert relative path to absolute path
-get_filename_component(HELLO_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../hello_lib" ABSOLUTE)
+get_filename_component(HELLO_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../modules/lib/hello_lib" ABSOLUTE)
 
 # This MUST come BEFORE find_package(Zephyr)
 set(ZEPHYR_EXTRA_MODULES ${HELLO_LIB_PATH})

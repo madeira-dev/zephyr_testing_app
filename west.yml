@@ -8,10 +8,10 @@ manifest:
       revision: main
       import: true
 
-    # # Add your library here!
-    # - name: hello-zephyr-library # This is the local directory name west will create
-    #   path: modules/lib/hello_lib # Where west will place it
-    #   url: https://github.com/madeira-dev/hello_zephyr_library.git
-    #   revision: v1.0.0 # Use the tag you created
+    # Add your library here!
+    - name: hello-zephyr-library # This is the local directory name west will create
+      path: modules/lib/hello_lib # Where west will place it
+      url: https://github.com/madeira-dev/hello_zephyr_library.git
+      revision: v1.0.2 # Use the tag you created
   self:
     path: app # The application code is in the 'app' directory
