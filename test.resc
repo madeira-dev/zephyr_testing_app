@@ -1,0 +1,14 @@
+# Create a machine instance
+mach create "nrf52840_node"
+
+# Load the platform description for nRF52840
+machine LoadPlatformDescription @platforms/cpus/nrf52840.repl
+
+# Load the ELF file onto the system bus of the created machine.
+sysbus LoadELF @build/zephyr/zephyr.elf
+
+# Show the UART output in the Renode console
+showAnalyzer sysbus.uart0
+
+# Start the simulation
+start
