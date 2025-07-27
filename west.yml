@@ -17,7 +17,7 @@
 #   self:
 #     path: app # The application code is in the 'app' directory
 
-# The branch below uses branch (main branch called zephyr)
+# The manifest below uses branch (main branch called zephyr)
 manifest:
   remotes:
     - name: zephyrproject-rtos
@@ -35,3 +35,21 @@ manifest:
       revision: zephyr
   self:
     path: app # The application code is in the 'app' directory
+
+# manifest:
+#   remotes:
+#     - name: zephyrproject-rtos
+#       url-base: https://github.com/zephyrproject-rtos
+#   projects:
+#     - name: zephyr
+#       remote: zephyrproject-rtos
+#       revision: main
+#       import: true
+
+#     # Point to local development directory
+#     - name: hello-zephyr-library
+#       path: modules/lib/hello_lib
+#       url: file:///Users/madeira/my_zephyr_projects/hello_lib
+#       revision: HEAD # Use current state of local repo
+#   self:
+#     path: app
