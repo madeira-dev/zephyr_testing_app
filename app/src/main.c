@@ -1,9 +1,8 @@
 #include <zephyr/kernel.h>
-#include "hello_lib.h" // Include your library's header
+#include "hello_lib.h"
 
 int main(void)
 {
-    // Call your library function
     hello_lib_say_hello();
     return 0;
 }
