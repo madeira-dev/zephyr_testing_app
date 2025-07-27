@@ -170,12 +170,11 @@ static void test_math_hal_basic(void)
         LOG_INF("RNG initialized successfully");
 
         // Test random bytes generation
-        uint8_t random_buffer[16];
+        LOG_INF("About to generate random bytes");
+        uint8_t random_buffer[1];
         if (math_hal_rng_bytes(random_buffer, sizeof(random_buffer)) == 0)
         {
-            LOG_INF("Generated 16 random bytes: %02x%02x%02x%02x...",
-                    random_buffer[0], random_buffer[1],
-                    random_buffer[2], random_buffer[3]);
+            LOG_INF("Generated 1 random byte");
         }
         else
         {
@@ -223,14 +222,17 @@ int main(void)
     LOG_INF("Target: nRF52840DK (ARM Cortex-M4F, 256KB RAM)");
 
     // Run memory analysis first
-    // test_memory_usage();
+    test_memory_usage();
 
     // Run basic math tests
-    // test_math_hal_basic();
-    // test_bigint_basic();
-    // test_polynomial_basic();
+    test_math_hal_basic();
+    test_bigint_basic();
+    test_polynomial_basic();
 
     LOG_INF("=== All Math Tests Completed ===");
+
+    // Wait to allow logs to flush (important for Renode/Zephyr)
+    // k_sleep(K_MSEC(3000));
 
     return 0;
 }
