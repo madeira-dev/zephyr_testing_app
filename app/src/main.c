@@ -68,7 +68,7 @@ static void test_polynomial_basic(void)
 {
     LOG_INF("=== Testing Polynomial Basic Operations ===");
 
-    polynomial_t poly_a, poly_b, poly_result;
+    static polynomial_t poly_a, poly_b, poly_result;
     bigint_t coeff;
 
     // Initialize polynomials
