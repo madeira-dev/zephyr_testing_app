@@ -9,8 +9,6 @@
 
 LOG_MODULE_REGISTER(test_ckks_encrypt, LOG_LEVEL_INF);
 
-extern int ckks_encryptor_dummy_global;
-
 void print_poly(const char *label, const polynomial_t *poly)
 {
     LOG_INF("%s degree: %u", label, poly->degree);
@@ -24,7 +22,6 @@ void print_poly(const char *label, const polynomial_t *poly)
 
 void main(void)
 {
-    LOG_INF("ckks_encryptor_dummy_global = %d", ckks_encryptor_dummy_global);
     static bigint_t modulus_chain[1];
     static ckks_cryptoparams_t params;
     static ckks_encoder_t encoder;
