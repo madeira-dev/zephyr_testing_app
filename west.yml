@@ -17,25 +17,7 @@
 #   self:
 #     path: app # The application code is in the 'app' directory
 
-# The manifest below uses branch (main branch called zephyr)
-manifest:
-  remotes:
-    - name: zephyrproject-rtos
-      url-base: https://github.com/zephyrproject-rtos
-  projects:
-    - name: zephyr
-      remote: zephyrproject-rtos
-      revision: main
-      import: true
-
-    # Add your library here!
-    - name: hello-zephyr-library # This is the local directory name west will create
-      path: modules/lib/hello_lib # Where west will place it
-      url: https://github.com/madeira-dev/hello_zephyr_library.git
-      revision: zephyr
-  self:
-    path: app # The application code is in the 'app' directory
-
+# The manifest below uses branch (main branch called zephyr) [this one works perfectly for github changes]
 # manifest:
 #   remotes:
 #     - name: zephyrproject-rtos
@@ -46,10 +28,22 @@ manifest:
 #       revision: main
 #       import: true
 
-#     # Point to local development directory
-#     - name: hello-zephyr-library
-#       path: modules/lib/hello_lib
-#       url: file:///Users/madeira/my_zephyr_projects/hello_lib
-#       revision: HEAD # Use current state of local repo
+#     # Add your library here!
+#     - name: hello-zephyr-library # This is the local directory name west will create
+#       path: modules/lib/hello_lib # Where west will place it
+#       url: https://github.com/madeira-dev/hello_zephyr_library.git
+#       revision: zephyr
 #   self:
-#     path: app
+#     path: app # The application code is in the 'app' directory
+
+manifest:
+  remotes:
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+  projects:
+    - name: zephyr
+      remote: zephyrproject-rtos
+      revision: main
+      import: true
+  self:
+    path: app
