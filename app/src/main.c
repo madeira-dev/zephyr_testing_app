@@ -1,201 +1,130 @@
+#include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include "scheme/ckks/ckks_cryptoparams.h"
-#include "scheme/ckks/ckks_keygen.h"
-#include "scheme/ckks/ckks_encoder.h"
-#include "scheme/ckks/ckks_encryptor.h"
-#include "scheme/ckks/ckks.h"
-#include "core/math/polynomial.h"
-#include "core/math/biginteger.h"
-#include "core/math/math_hal.h"
+#include "openfhe_embedded.h"
+#include "core/utils/serialization.h"
+#include <string.h>
 
-LOG_MODULE_REGISTER(test_ntt, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(test_fhe_lib, LOG_LEVEL_INF);
 
-// Helper to print a simple math_word_t array
-// void print_array(const char *label, const math_word_t *arr, uint32_t size)
-// {
-//   printk("%s: [", label);
-//   for (uint32_t i = 0; i < size; i++)
-//   {
-//     printk("%u", (uint32_t)arr[i]);
-//     if (i < size - 1)
-//     {
-//       printk(", ");
-//     }
-//   }
-//   printk("]\n");
-// }
+// Define test parameters
+#define TEST_RING_DIMENSION 256
+#define TEST_SCALING_FACTOR 4096.0
 
-// Test NTT init params
-// void test_ntt_init(void)
-// {
-//   ntt_params_t params;
-//   uint32_t n = 8;
-//   math_word_t modulus = 17; // Small prime for testing: 17-1 = 16, which is divisible by 8
+// A large buffer for the serialized JSON output.
+// Adjust size if needed for larger ring dimensions.
+#define SERIALIZATION_BUFFER_SIZE 8192
+static char serialization_buffer[SERIALIZATION_BUFFER_SIZE];
 
-//   // LOG_INF("--- Testing NTT Init (n=%u, mod=%u) ---", n, (uint32_t)modulus);
-//   LOG_INF("please tell me anything updated inside test_ntt_init!!!!!!!!");
-// int ret = math_hal_ntt_init_params(&params, n, modulus);
-// if (ret == 0)
-// {
-//   LOG_INF("NTT init success: root=%u, inv_root=%u, inv_n=%u",
-//           (uint32_t)params.root_of_unity,
-//           (uint32_t)params.inv_root_of_unity,
-//           (uint32_t)params.inv_n);
-
-//   // Verify root^n ≡ 1 mod modulus
-//   math_word_t check = math_hal_mod_pow(params.root_of_unity, n, modulus);
-//   if (check == 1)
-//   {
-//     LOG_INF("Primitive root verification passed (root^n mod m == 1)");
-//   }
-//   else
-//   {
-//     LOG_ERR("Primitive root verification failed: %u", (uint32_t)check);
-//   }
-// }
-// else
-// {
-//   LOG_ERR("NTT init failed: %d", ret);
-// }
-// LOG_INF("--- End Test NTT Init ---\n");
-// }
-
-// Test forward and inverse NTT transform
-// void test_ntt_transform(void)
-// {
-//   ntt_params_t params;
-//   uint32_t n = 8;
-//   math_word_t modulus = 17;
-
-//   LOG_INF("--- Testing NTT Forward/Inverse Transform (n=%u, mod=%u) ---", n, (uint32_t)modulus);
-
-//   if (math_hal_ntt_init_params(&params, n, modulus) != 0)
-//   {
-//     LOG_ERR("Failed to init NTT params for transform test.");
-//     return;
-//   }
-
-//   math_word_t poly[8] = {1, 2, 3, 4, 0, 0, 0, 0};
-//   math_word_t original_poly[8];
-//   memcpy(original_poly, poly, sizeof(poly));
-
-//   print_array("Original", original_poly, n);
-
-//   // Forward NTT
-//   math_hal_ntt_forward(poly, &params);
-//   print_array("Forward NTT", poly, n);
-
-//   // Inverse NTT
-//   math_hal_ntt_inverse(poly, &params);
-//   print_array("Inverse NTT", poly, n);
-
-//   // Verification
-//   bool success = true;
-//   for (uint32_t i = 0; i < n; i++)
-//   {
-//     if (poly[i] != original_poly[i])
-//     {
-//       success = false;
-//       break;
-//     }
-//   }
-
-//   if (success)
-//   {
-//     LOG_INF("SUCCESS: Inverse transform matches original polynomial.");
-//   }
-//   else
-//   {
-//     LOG_ERR("FAILURE: Inverse transform does not match original.");
-//   }
-//   LOG_INF("--- End Test NTT Transform ---\n");
-// }
-
-// Test polynomial multiplication using NTT
-// void test_ntt_multiplication(void)
-// {
-//   ntt_params_t params;
-//   uint32_t n = 8;
-//   math_word_t modulus = 17;
-
-//   LOG_INF("--- Testing NTT Multiplication (n=%u, mod=%u) ---", n, (uint32_t)modulus);
-
-//   if (math_hal_ntt_init_params(&params, n, modulus) != 0)
-//   {
-//     LOG_ERR("Failed to init NTT params for multiplication test.");
-//     return;
-//   }
-
-//   // Polynomials a(x) = 1 + 2x and b(x) = 3 + x
-//   math_word_t poly_a[8] = {1, 2, 0, 0, 0, 0, 0, 0};
-//   math_word_t poly_b[8] = {3, 1, 0, 0, 0, 0, 0, 0};
-//   math_word_t ntt_result[8];
-
-//   print_array("Poly A", poly_a, n);
-//   print_array("Poly B", poly_b, n);
-
-//   // Transform both polynomials
-//   math_hal_ntt_forward(poly_a, &params);
-//   math_hal_ntt_forward(poly_b, &params);
-
-//   // Point-wise multiplication in NTT domain
-//   math_hal_ntt_mult(ntt_result, poly_a, poly_b, &params);
-
-//   // Inverse transform to get result
-//   math_hal_ntt_inverse(ntt_result, &params);
-
-//   print_array("NTT Result", ntt_result, n);
-
-//   // Expected result: (1 + 2x)(3 + x) = 3 + 7x + 2x^2
-//   math_word_t expected_result[8] = {3, 7, 2, 0, 0, 0, 0, 0};
-//   print_array("Expected", expected_result, n);
-
-//   // Verification
-//   bool success = true;
-//   for (uint32_t i = 0; i < n; i++)
-//   {
-//     if (ntt_result[i] != expected_result[i])
-//     {
-//       success = false;
-//       break;
-//     }
-//   }
-
-//   if (success)
-//   {
-//     LOG_INF("SUCCESS: NTT multiplication matches expected result.");
-//   }
-//   else
-//   {
-//     LOG_ERR("FAILURE: NTT multiplication does not match expected result.");
-//   }
-//   LOG_INF("--- End Test NTT Multiplication ---\n");
-// }
-
+/**
+ * @brief Main test routine for the embedded FHE library.
+ */
 int main(void)
 {
-  LOG_INF("what about inside main????????");
+  LOG_INF("--- Starting OpenFHE-Embedded Library Test ---");
 
-  ntt_params_t params;
-  uint32_t n = 8;
-  math_word_t modulus = 17; // Small prime for testing: 17-1 = 16, which is divisible by 8
+  static fhe_context_t context;
+  memset(&context, 0, sizeof(fhe_context_t));
 
-  // LOG_INF("--- Testing NTT Init (n=%u, mod=%u) ---", n, (uint32_t)modulus);
-  LOG_INF("please tell me anything updated inside test_ntt_init!!!!!!!!");
-  int ret = math_hal_ntt_init_params(&params, n, modulus);
+  // ========================================================================
+  // 1. Test FHE Context Initialization
+  // ========================================================================
+  LOG_INF("1. Testing FHE Context Initialization...");
+  LOG_INF("   Ring Dimension: %u, Scaling Factor: %.1f", TEST_RING_DIMENSION, TEST_SCALING_FACTOR);
 
-  // LOG_INF("--- Starting NTT Tests ---");
+  uint64_t start_cycles = math_hal_get_cycles();
+  int ret = fhe_context_init(&context, TEST_RING_DIMENSION, TEST_SCALING_FACTOR);
+  uint64_t end_cycles = math_hal_get_cycles();
 
-  // 1. Test NTT parameter initialization
-  // test_ntt_init();
+  if (ret == 0 && context.is_initialized)
+  {
+    LOG_INF("   SUCCESS: Context initialized in %llu cycles.", (end_cycles - start_cycles));
+    LOG_INF("   - CryptoParams: %u moduli generated.", context.params.num_moduli);
+    LOG_INF("   - Public Key: Generated successfully.");
+  }
+  else
+  {
+    LOG_ERR("   FAILURE: Context initialization failed with code %d.", ret);
+    return -1;
+  }
 
-  // 2. Test forward and inverse transform
-  // test_ntt_transform();
+  // ========================================================================
+  // 2. Test CKKS Encryption
+  // ========================================================================
+  LOG_INF("\n2. Testing CKKS Encryption...");
+  double sample_data[] = {0.1, 0.2, 0.3, 0.4};
+  size_t sample_count = sizeof(sample_data) / sizeof(double);
 
-  // 3. Test polynomial multiplication
-  // test_ntt_multiplication();
+  printk("   Plaintext to encrypt (%d values): [", sample_count);
+  for (size_t i = 0; i < sample_count; i++)
+  {
+    printk("%.2f%s", sample_data[i], (i == sample_count - 1) ? "" : ", ");
+  }
+  printk("]\n");
 
-  // LOG_INF("--- All NTT Tests Completed ---");
+  static ckks_ciphertext_t ciphertext;
+  start_cycles = math_hal_get_cycles();
+  ret = fhe_encrypt(&context, sample_data, sample_count, &ciphertext);
+  end_cycles = math_hal_get_cycles();
+
+  if (ret == 0)
+  {
+    LOG_INF("   SUCCESS: Encryption completed in %llu cycles.", (end_cycles - start_cycles));
+    LOG_INF("   - Ciphertext scaling factor: %.1f (Expected: %.1f)", ciphertext.scaling_factor, TEST_SCALING_FACTOR);
+    LOG_INF("   - Ciphertext level: %u (Expected: 0)", ciphertext.level);
+  }
+  else
+  {
+    LOG_ERR("   FAILURE: Encryption failed with code %d.", ret);
+    fhe_context_cleanup(&context);
+    return -1;
+  }
+
+  // ========================================================================
+  // 3. Test Ciphertext Serialization (for Interoperability)
+  // ========================================================================
+  LOG_INF("\n3. Testing Ciphertext Serialization...");
+  memset(serialization_buffer, 0, SERIALIZATION_BUFFER_SIZE);
+
+  int bytes_written = fhe_ciphertext_serialize(&ciphertext, serialization_buffer, SERIALIZATION_BUFFER_SIZE);
+
+  if (bytes_written > 0)
+  {
+    LOG_INF("   SUCCESS: Ciphertext serialized to %d bytes.", bytes_written);
+    LOG_INF("   --- BEGIN SERIALIZED CIPHERTEXT (JSON) ---");
+    // Print the JSON string in chunks to avoid logger limitations
+    const size_t chunk_size = 128;
+    for (size_t i = 0; i < bytes_written; i += chunk_size)
+    {
+      size_t remaining = bytes_written - i;
+      size_t len = (remaining < chunk_size) ? remaining : chunk_size;
+      printk("%.*s", len, &serialization_buffer[i]);
+    }
+    printk("\n"); // Print a final newline
+    LOG_INF("   --- END SERIALIZED CIPHERTEXT (JSON) ---");
+    LOG_INF("\n   VALIDATION STEP: Copy the JSON output above and use it in a full OpenFHE host application to verify decryption.");
+  }
+  else
+  {
+    LOG_ERR("   FAILURE: Serialization failed with code %d.", bytes_written);
+    fhe_context_cleanup(&context);
+    return -1;
+  }
+
+  // ========================================================================
+  // 4. Test Context Cleanup
+  // ========================================================================
+  LOG_INF("\n4. Testing Context Cleanup...");
+  fhe_context_cleanup(&context);
+  if (!context.is_initialized)
+  {
+    LOG_INF("   SUCCESS: Context cleaned up successfully.");
+  }
+  else
+  {
+    LOG_ERR("   FAILURE: Context cleanup failed.");
+  }
+
+  LOG_INF("\n--- All tests complete ---");
 
   return 0;
 }
