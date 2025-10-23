@@ -1,8 +1,6 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include "openfhe_embedded.h"
-#include "core/utils/serialization.h"
-#include "core/utils/export.h"
 #include <string.h>
 
 LOG_MODULE_REGISTER(test_fhe_lib, LOG_LEVEL_INF);
@@ -11,14 +9,8 @@ LOG_MODULE_REGISTER(test_fhe_lib, LOG_LEVEL_INF);
 #define TEST_RING_DIMENSION 256
 #define TEST_SCALING_FACTOR 4096.0
 
-// A large buffer for the serialized JSON output.
-// Adjust size if needed for larger ring dimensions.
-#define SERIALIZATION_BUFFER_SIZE 8192
-static char serialization_buffer[SERIALIZATION_BUFFER_SIZE];
-
 int main(void)
 {
-  setvbuf(stdout, NULL, _IONBF, 0);
   LOG_INF("--- Starting OpenFHE-Embedded Library Test ---");
 
   static fhe_context_t context;
@@ -39,32 +31,6 @@ int main(void)
     LOG_INF("   SUCCESS: Context initialized in %llu cycles.", (end_cycles - start_cycles));
     LOG_INF("   - CryptoParams: %u moduli generated.", context.params.num_moduli);
     LOG_INF("   - Public Key: Generated successfully.");
-
-    LOG_INF("   Exporting CryptoContext over UART (binary follows)...");
-    fflush(stdout); /* ensure logs reach the host before binary */
-
-    size_t cc_bytes = serialization_measure_cryptocontext(&context.params);
-    if (cc_bytes == 0)
-    {
-      LOG_ERR("   FAILURE: CryptoParams measurement returned zero.");
-      fhe_context_cleanup(&context);
-      return -1;
-    }
-    LOG_INF("   CryptoParams export size: %u bytes.", (unsigned int)cc_bytes);
-    printk(">>CC_BIN_BEGIN %u\n", (unsigned int)cc_bytes);
-    k_msleep(5);
-
-    int export_rc = serialization_export_cryptocontext(stdout, &context.params);
-    if (export_rc < 0)
-    {
-      LOG_ERR("   FAILURE: CryptoContext export failed (%d).", export_rc);
-      fhe_context_cleanup(&context);
-      return -1;
-    }
-    k_msleep(5);
-    printk("\n>>CC_BIN_END\n");
-    fflush(stdout); /* push all bytes out before normal logging resumes */
-    LOG_INF("   CryptoContext export complete.");
   }
   else
   {
