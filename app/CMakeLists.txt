@@ -6,4 +6,7 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
 project(app)
 
-target_sources(app PRIVATE src/test_ckks_params.c)
+target_sources(app PRIVATE
+src/test_ckks_params.c
+src/test_ntt.c
+)
