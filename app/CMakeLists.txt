@@ -9,4 +9,5 @@ project(app)
 target_sources(app PRIVATE
 src/test_ckks_params.c
 src/test_ntt.c
+src/test_encode.c
 )
