@@ -11,7 +11,3 @@ project(app LANGUAGES C CXX)
 
 # 4. Add Sources
 target_sources(app PRIVATE src/initial_test.cpp)
-
-# Note: We removed target_compile_options.
-# The C++ Standard (C++17) is now handled entirely by app/prj.conf
-# via CONFIG_STD_CPP17=y.
